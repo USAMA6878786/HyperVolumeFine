@@ -17,8 +17,8 @@ set -e
 PROJ="$(cd "$(dirname "$0")" && { pwd -W 2>/dev/null || pwd; })"   # Git Bash 下取 D:/... 形式，避免 find 输出反斜杠路径
 TOOLCHAIN="${TOOLCHAIN:-$PROJ/../build}"
 OUT="${OUT_DIR:-$PROJ/../dist}"
-VER_NAME="2.5"
-VER_CODE="16"
+VER_NAME="2.6"
+VER_CODE="17"
 
 pick() { for c in "$@"; do [ -x "$c" ] && { echo "$c"; return 0; }; done; return 1; }
 
@@ -102,7 +102,11 @@ echo "[5/6] zipalign"
 "$ZIPALIGN" -f -p 4 "$PROJ/out/unsigned.apk" "$PROJ/out/aligned.apk"
 
 echo "[6/6] sign"
-KS="${KEYSTORE:-$PROJ/out/debug.keystore}"
+# 签名密钥放在 out/ 之外并长期保留：out/ 每次构建都会被清空，
+# 若密钥跟着重建，用户就无法覆盖升级（签名不一致）
+KEYDIR="$PROJ/.keystore"
+mkdir -p "$KEYDIR"
+KS="${KEYSTORE:-$KEYDIR/hypervolumefine.jks}"
 if [ ! -f "$KS" ]; then
   "$KEYTOOL" -genkeypair -keystore "$KS" -storepass android \
     -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
