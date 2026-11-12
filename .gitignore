@@ -1,0 +1,15 @@
+# 构建产物
+out/
+dist/
+*.apk
+*.idsig
+*.keystore
+*.jks
+
+# 本机调试脚本（依赖本机 adb/LSPosed 配置，不适合公开）
+enable.sh
+
+# IDE
+.idea/
+*.iml
+.vscode/

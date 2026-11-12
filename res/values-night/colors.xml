@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material 3 baseline dark palette -->
+    <color name="vf_surface">#141218</color>
+    <color name="vf_surface_container">#211F26</color>
+    <color name="vf_surface_container_high">#2B2930</color>
+    <color name="vf_surface_container_highest">#36343B</color>
+    <color name="vf_primary">#D0BCFF</color>
+    <color name="vf_on_primary">#381E72</color>
+    <color name="vf_primary_container">#4F378B</color>
+    <color name="vf_on_primary_container">#EADDFF</color>
+    <color name="vf_secondary_container">#4A4458</color>
+    <color name="vf_on_secondary_container">#E8DEF8</color>
+    <color name="vf_on_surface">#E6E0E9</color>
+    <color name="vf_on_surface_variant">#CAC4D0</color>
+    <color name="vf_outline">#938F99</color>
+    <color name="vf_outline_variant">#49454F</color>
+    <color name="vf_ripple">#33D0BCFF</color>
+    <color name="vf_switch_track_off">#36343B</color>
+    <color name="vf_switch_thumb_off">#938F99</color>
+    <color name="vf_error_container">#8C1D18</color>
+    <color name="vf_on_error_container">#F9DEDC</color>
+</resources>
