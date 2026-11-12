@@ -170,7 +170,7 @@ cur=340 step 60 -> 40
 所以现在的通道是：
 
 ```
-模块 App（内存改值） --广播 com.volumefine.module.ACTION_CONFIG--> system_server 里的模块
+模块 App（内存改值） --广播 io.github.usama6878786.hypervolumefine.ACTION_CONFIG--> system_server 里的模块
                                                                       |
                                                           Settings.System（模块有权写）
 ```
@@ -213,7 +213,7 @@ App 内修改需要「修改系统设置」权限（首次打开会有提示，�
 
 ```
 volume-fine/
-├── AndroidManifest.xml                     # 包名 com.volumefine.module，theme=VfTheme
+├── AndroidManifest.xml                     # 包名 io.github.usama6878786.hypervolumefine，theme=VfTheme
 ├── build.sh                                # aapt2 + javac + d8 + apksigner，无需 Gradle
 ├── enable.sh                               # 开发用：写 LSPosed 数据库启用模块并重启
 ├── res/
@@ -221,7 +221,7 @@ volume-fine/
 │   ├── values-night/{colors,bools,styles}.xml
 │   └── drawable/                           # 卡片、胶囊、滑块轨道/拇指、按钮、图标
 └── src/main/
-    ├── java/com/volumefine/module/
+    ├── java/io/github/usama6878786/hypervolumefine/
     │   ├── VolumeFineModule.java           # system_server 侧 hook 主体（API 102）
     │   ├── PanelNumber.java                # SystemUI 侧：把数字画进音量面板
     │   ├── SettingsActivity.java           # M3 配置界面（纯代码布局）

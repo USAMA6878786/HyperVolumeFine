@@ -1,4 +1,4 @@
-package com.volumefine.module;
+package io.github.usama6878786.hypervolumefine;
 
 import android.content.ContentResolver;
 import android.content.Context;

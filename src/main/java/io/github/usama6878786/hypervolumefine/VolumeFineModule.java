@@ -1,4 +1,4 @@
-package com.volumefine.module;
+package io.github.usama6878786.hypervolumefine;
 
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -43,8 +43,8 @@ public final class VolumeFineModule extends XposedModule {
     private static final String TAG = "VolumeFine";
 
     private static final String PROP_MEDIA_VOL_STEPS = "ro.config.media_vol_steps";
-    private static final String ACTION_CONFIG = "com.volumefine.module.ACTION_CONFIG";
-    private static final String MODULE_PKG = "com.volumefine.module";
+    private static final String ACTION_CONFIG = "io.github.usama6878786.hypervolumefine.ACTION_CONFIG";
+    private static final String MODULE_PKG = "io.github.usama6878786.hypervolumefine";
 
     /** 框架中"一档"对应的内部索引数量（VolumeStreamState#readSettings 固定为 setting * 10） */
     private static final int STEP_UNIT = 10;
