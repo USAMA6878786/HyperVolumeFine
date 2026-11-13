@@ -17,8 +17,8 @@ set -e
 PROJ="$(cd "$(dirname "$0")" && { pwd -W 2>/dev/null || pwd; })"   # Git Bash 下取 D:/... 形式，避免 find 输出反斜杠路径
 TOOLCHAIN="${TOOLCHAIN:-$PROJ/../build}"
 OUT="${OUT_DIR:-$PROJ/../dist}"
-VER_NAME="2.7"
-VER_CODE="18"
+VER_NAME="2.9"
+VER_CODE="20"
 
 pick() { for c in "$@"; do [ -x "$c" ] && { echo "$c"; return 0; }; done; return 1; }
 

@@ -83,8 +83,6 @@ public final class VolumeFineModule extends XposedModule {
 
     private ContentResolver mResolver;
     private Config mConfig;
-    /** 平滑步长的小数部分累积，保证 1.4 档这类步长按 1,1,2,1,1,2 均匀落地 */
-    private float mStepResidual;
     private long mConfigAt;
     private String mStreamsRaw;
     private Set<Integer> mStreamsCache;
@@ -373,6 +371,13 @@ public final class VolumeFineModule extends XposedModule {
         });
     }
 
+    /**
+     * 音量最终送给音频策略层时做一次非线性映射：
+     * 低音频"数值"对应的曲线位置更小（每步的响度变化更小），
+     * 数值越大越接近线性（恢复正常跨度）。
+     *
+     * UI 上显示的数字不变、每次按键仍然 +1，改变的只是送进曲线的位置。
+     */
     private void hookIndexFactors(ClassLoader cl) throws Throwable {
         Class<?> vss = Class.forName("com.android.server.audio.AudioService$VolumeStreamState", false, cl);
         Method m = vss.getDeclaredMethod("updateIndexFactors");
@@ -441,22 +446,6 @@ public final class VolumeFineModule extends XposedModule {
         }
     }
 
-    /**
-     * 当前档位下，一次按键应该跨多少档。
-     * 低音量区取 fine（跨度小 => 曲线跨度小 => 更细腻），
-     * 超过 threshold 后按二次曲线平滑过渡到 coarse，到最大档位时完全恢复。
-     */
-    private float unitsFor(int uiCur, int uiMax, Config cfg) {
-        int th = cfg.threshold;
-        if (uiCur <= th || uiMax <= th) {
-            return cfg.fine;
-        }
-        float t = (uiCur - th) / (float) (uiMax - th);
-        if (t > 1f) t = 1f;
-        t = t * t;                                  // 二次曲线：低音量区停留更久，越往上恢复越快
-        return cfg.fine + (cfg.coarse - cfg.fine) * t;
-    }
-
     private Object handleAdjustIndex(XposedInterface.Chain chain) throws Throwable {
         Object[] newArgs = null;
         try {
@@ -492,23 +481,18 @@ public final class VolumeFineModule extends XposedModule {
                 return chain.proceed();
             }
 
-            // 每次按键跨越多少档：低音量按 fine，随档位升高平滑过渡到 coarse（不再硬切）
-            int uiCur = cur / STEP_UNIT;
-            int uiMax = max / STEP_UNIT;
-            float want = unitsFor(uiCur, uiMax, cfg) + mStepResidual;
-            int units = Math.max(1, Math.round(want));
-            mStepResidual = want - units;
-            if (mStepResidual > 0.5f) mStepResidual = 0.5f;
-            if (mStepResidual < -0.5f) mStepResidual = -0.5f;
-
+            // 低音量区按 fine 档，超过 threshold 按 coarse 档（两个值都由 App 设置）
+            int lowLimit = cfg.threshold * STEP_UNIT;
+            boolean fine = step > 0 ? cur < lowLimit : cur <= lowLimit;
+            int units = fine ? cfg.fine : cfg.coarse;
             int newStep = step > 0 ? STEP_UNIT * units : -STEP_UNIT * units;
             if (newStep == step) {
                 return chain.proceed();
             }
             newArgs = new Object[]{newStep, device, chain.getArg(2), chain.getArg(3)};
             if (cfg.debug) {
-                log(3, TAG, "step cur=" + uiCur + "/" + uiMax + " " + step + " -> " + newStep
-                        + " (units=" + units + ", want=" + want + ")");
+                log(3, TAG, "step cur=" + (cur / STEP_UNIT) + " " + step + " -> " + newStep
+                        + " (fine=" + fine + ", units=" + units + ")");
             }
         } catch (Throwable t) {
             return chain.proceed();
