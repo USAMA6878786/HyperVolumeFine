@@ -127,9 +127,9 @@ public class SettingsActivity extends Activity {
                 "在系统音量面板内显示当前档位数字", KEY_SHOW_NUMBER, DEF_SHOW_NUMBER);
 
         addSectionLabel(root, "参数调节");
-        addSliderCard(root, "音量档位数", 20, 120, 10, KEY_STEPS,
+        addSliderCard(root, "音量档位数", 20, 150, 10, KEY_STEPS,
                 "拖动按 10 档递增，−/+ 微调 1 档。改完需重启手机。");
-        addSliderCard(root, "细调范围", 0, 100, 10, KEY_THRESHOLD,
+        addSliderCard(root, "细调范围", 0, 150, 10, KEY_THRESHOLD,
                 "拖动按 10 档递增，−/+ 微调 1 档。低于该档位按「低音量步进」走。");
         addSliderCard(root, "低音量步进", 1, 6, 1, KEY_FINE,
                 "低音量区每按一次走几档，1 = 最细。");
@@ -628,7 +628,7 @@ public class SettingsActivity extends Activity {
         footer.setTextSize(11);
         footer.setTextColor(mColorOnSurfaceVariant);
         footer.setGravity(Gravity.CENTER);
-        footer.setText("v2.9 · API 102 · 作用域 system + systemui");
+        footer.setText("v2.10 · API 102 · 作用域 system + systemui");
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.topMargin = dp(20);
