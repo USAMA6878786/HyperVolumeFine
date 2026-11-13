@@ -83,6 +83,8 @@ public final class VolumeFineModule extends XposedModule {
 
     private ContentResolver mResolver;
     private Config mConfig;
+    /** 平滑步长的小数部分累积，保证 1.4 档这类步长按 1,1,2,1,1,2 均匀落地 */
+    private float mStepResidual;
     private long mConfigAt;
     private String mStreamsRaw;
     private Set<Integer> mStreamsCache;
@@ -439,6 +441,22 @@ public final class VolumeFineModule extends XposedModule {
         }
     }
 
+    /**
+     * 当前档位下，一次按键应该跨多少档。
+     * 低音量区取 fine（跨度小 => 曲线跨度小 => 更细腻），
+     * 超过 threshold 后按二次曲线平滑过渡到 coarse，到最大档位时完全恢复。
+     */
+    private float unitsFor(int uiCur, int uiMax, Config cfg) {
+        int th = cfg.threshold;
+        if (uiCur <= th || uiMax <= th) {
+            return cfg.fine;
+        }
+        float t = (uiCur - th) / (float) (uiMax - th);
+        if (t > 1f) t = 1f;
+        t = t * t;                                  // 二次曲线：低音量区停留更久，越往上恢复越快
+        return cfg.fine + (cfg.coarse - cfg.fine) * t;
+    }
+
     private Object handleAdjustIndex(XposedInterface.Chain chain) throws Throwable {
         Object[] newArgs = null;
         try {
@@ -474,17 +492,23 @@ public final class VolumeFineModule extends XposedModule {
                 return chain.proceed();
             }
 
-            int lowLimit = cfg.threshold * STEP_UNIT;
-            boolean fine = step > 0 ? cur < lowLimit : cur <= lowLimit;
-            int units = fine ? cfg.fine : cfg.coarse;
+            // 每次按键跨越多少档：低音量按 fine，随档位升高平滑过渡到 coarse（不再硬切）
+            int uiCur = cur / STEP_UNIT;
+            int uiMax = max / STEP_UNIT;
+            float want = unitsFor(uiCur, uiMax, cfg) + mStepResidual;
+            int units = Math.max(1, Math.round(want));
+            mStepResidual = want - units;
+            if (mStepResidual > 0.5f) mStepResidual = 0.5f;
+            if (mStepResidual < -0.5f) mStepResidual = -0.5f;
+
             int newStep = step > 0 ? STEP_UNIT * units : -STEP_UNIT * units;
             if (newStep == step) {
                 return chain.proceed();
             }
             newArgs = new Object[]{newStep, device, chain.getArg(2), chain.getArg(3)};
             if (cfg.debug) {
-                log(3, TAG, "step cur=" + cur + " " + step + " -> " + newStep
-                        + " (fine=" + fine + ", limit=" + lowLimit + ")");
+                log(3, TAG, "step cur=" + uiCur + "/" + uiMax + " " + step + " -> " + newStep
+                        + " (units=" + units + ", want=" + want + ")");
             }
         } catch (Throwable t) {
             return chain.proceed();
